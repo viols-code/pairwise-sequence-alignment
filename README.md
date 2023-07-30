@@ -9,8 +9,8 @@
 This is a project proposed by the Scientific Programming course by Politecnico di Milano
 
 ## Description
-**Project name:** Pairwise sequence alignment
-**Programming language:** Python  
+**Project name:** Pairwise sequence alignment  
+**Programming language:** Python    
 **Short description:** Implement a pairwise global sequence alignment method, to find the optimal
 global sequence alignment between two nucleotide sequences, using both Smith-Waterman and Needleman–Wunsch algorithms.  
 **Expected outcome:** 
