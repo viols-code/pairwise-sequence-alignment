@@ -134,7 +134,7 @@ def compute_smith_waterman(m, s, g, sequence1, sequence2, al):
     return procedure_matrix, traceback_matrix
 
 
-def path(sequence1, sequence2, traceback_matrix, r, c):
+def path(sequence1, sequence2, traceback_matrix, r, c, score):
     """
     Compute alignments from the traceback matrix
     :param sequence1: first sequence
@@ -154,7 +154,7 @@ def path(sequence1, sequence2, traceback_matrix, r, c):
         r = alignment[2]
         c = alignment[3]
         if traceback_matrix[r, c] == Step.STOP.value:  # End of alignment
-            print("Alignment:")
+            print(f"Alignment with score {score}:")
             print(alignment[0])
             print(alignment[1])
             alignments.remove(alignment)
@@ -187,11 +187,12 @@ def traceback_smith_waterman(sequence1, sequence2, procedure_matrix, traceback_m
     :param traceback_matrix: traceback matrix
     :param al: 0 if only one optimal alignment need to be returned, 1 otherwise
     """
-    max_xy = np.where(procedure_matrix == np.max(procedure_matrix))
+    score = np.max(procedure_matrix)
+    max_xy = np.where(procedure_matrix == score)
     x = max_xy[0]
     y = max_xy[1]
     for i in range(len(x)):
-        path(sequence1, sequence2, traceback_matrix, x[i], y[i])
+        path(sequence1, sequence2, traceback_matrix, x[i], y[i], score)
         if al == 0:
             return
 
@@ -224,6 +225,6 @@ if __name__ == '__main__':
         traceback_smith_waterman(seq1, seq2, matrix, traceback, align)
     elif algorithm == 'global':
         matrix, traceback = compute_needleman_wunsch(match, mismatch, gap, seq1, seq2, align)
-        path(seq1, seq2, traceback, len(seq1), len(seq2))
+        path(seq1, seq2, traceback, len(seq1), len(seq2), matrix[len(seq1), len(seq2)])
     else:
         print("Insert 'local' for local alignment and 'global' for global alignment")
