@@ -3,7 +3,8 @@ import unittest
 import numpy as np
 from unittest.mock import patch
 
-from sequence_alignment import compute_smith_waterman, determine_step, traceback_smith_waterman, compute_needleman_wunsch, path
+from sequence_alignment import compute_smith_waterman, determine_step, traceback_smith_waterman, \
+    compute_needleman_wunsch, path
 
 
 class PairwiseAlignments(unittest.TestCase):
@@ -126,6 +127,24 @@ class PairwiseAlignments(unittest.TestCase):
                                                            [0, 2, 1, 2],
                                                            [0, 2, 1, 2]]))
 
+    def test_compute_smith_waterman_5(self):
+        seq1 = "TGCT"
+        seq2 = "ATTCA"
+        matrix, traceback = compute_smith_waterman(3, -1, -3, seq1, seq2, 1)
+        np.testing.assert_array_equal(matrix, np.array([[0, 0, 0, 0, 0, 0],
+                                                        [0, 0, 3, 3, 0, 0],
+                                                        [0, 0, 0, 2, 2, 0],
+                                                        [0, 0, 0, 0, 5, 2],
+                                                        [0, 0, 3, 3, 2, 4]]))
+        np.testing.assert_array_equal(traceback, np.array([[0, 0, 0, 0, 0, 0],
+                                                           [0, 0, 1, 1, 0, 0],
+                                                           [0, 0, 0, 1, 1, 0],
+                                                           [0, 0, 0, 0, 1, 3],
+                                                           [0, 0, 1, 1, 2, 1]]))
+        matrix2, traceback2 = compute_smith_waterman(3, -1, -3, seq1, seq2, 0)
+        np.testing.assert_array_equal(matrix, matrix2)
+        np.testing.assert_array_equal(traceback, traceback2)
+
     def test_compute_needleman_wunsch_1(self):
         seq1 = "AATCG"
         seq2 = "AACG"
@@ -196,13 +215,43 @@ class PairwiseAlignments(unittest.TestCase):
                                                            [2, 2, 2, 1, 1],
                                                            [2, 2, 2, 2, 1]]))
 
+    def test_compute_needleman_wunsch_5(self):
+        seq1 = "TGCT"
+        seq2 = "ATTCA"
+        matrix, traceback = compute_needleman_wunsch(3, -1, -3, seq1, seq2, 1)
+        np.testing.assert_array_equal(matrix, np.array([[0, -3, -6, -9, -12, -15],
+                                                        [-3, -1, 0, -3, -6, -9],
+                                                        [-6, -4, -2, -1, -4, -7],
+                                                        [-9, -7, -5, -3, 2, -1],
+                                                        [-12, -10, -4, -2, -1, 1]]))
+        np.testing.assert_array_equal(traceback, np.array([[0, 3, 3, 3, 3, 3],
+                                                           [2, 1, 1, 5, 3, 3],
+                                                           [2, 4, 1, 1, 5, 5],
+                                                           [2, 4, 4, 1, 1, 3],
+                                                           [2, 4, 1, 1, 2, 1]]))
+
+    def test_compute_needleman_wunsch_6(self):
+        seq1 = "TGCT"
+        seq2 = "ATTCA"
+        matrix, traceback = compute_needleman_wunsch(3, -1, -3, seq1, seq2, 0)
+        np.testing.assert_array_equal(matrix, np.array([[0, -3, -6, -9, -12, -15],
+                                                        [-3, -1, 0, -3, -6, -9],
+                                                        [-6, -4, -2, -1, -4, -7],
+                                                        [-9, -7, -5, -3, 2, -1],
+                                                        [-12, -10, -4, -2, -1, 1]]))
+        np.testing.assert_array_equal(traceback, np.array([[0, 3, 3, 3, 3, 3],
+                                                           [2, 1, 1, 1, 3, 3],
+                                                           [2, 1, 1, 1, 1, 1],
+                                                           [2, 1, 1, 1, 1, 3],
+                                                           [2, 1, 1, 1, 2, 1]]))
+
     @patch('sys.stdout', new_callable=io.StringIO)
     def test_traceback_smith_waterman_1(self, mock_stdout):
         seq1 = "AATCG"
         seq2 = "AACG"
         matrix, traceback = compute_smith_waterman(1, -1, -2, seq1, seq2, 1)
         traceback_smith_waterman(seq1, seq2, matrix, traceback, 1)
-        self.assertEqual(mock_stdout.getvalue(), "Alignment:\nAA\nAA\nAlignment:\nCG\nCG\n")
+        self.assertEqual(mock_stdout.getvalue(), "Alignment with score 2:\nAA\nAA\nAlignment with score 2:\nCG\nCG\n")
 
     @patch('sys.stdout', new_callable=io.StringIO)
     def test_traceback_smith_waterman_2(self, mock_stdout):
@@ -210,7 +259,7 @@ class PairwiseAlignments(unittest.TestCase):
         seq2 = "CIAOCI"
         matrix, traceback = compute_smith_waterman(2, -1, -2, seq1, seq2, 1)
         traceback_smith_waterman(seq1, seq2, matrix, traceback, 1)
-        self.assertEqual(mock_stdout.getvalue(), "Alignment:\nCIAO\nCIAO\n")
+        self.assertEqual(mock_stdout.getvalue(), "Alignment with score 8:\nCIAO\nCIAO\n")
 
     @patch('sys.stdout', new_callable=io.StringIO)
     def test_traceback_smith_waterman_3(self, mock_stdout):
@@ -218,7 +267,7 @@ class PairwiseAlignments(unittest.TestCase):
         seq2 = "ACA"
         matrix, traceback = compute_smith_waterman(3, -1, -1, seq1, seq2, 1)
         traceback_smith_waterman(seq1, seq2, matrix, traceback, 1)
-        self.assertEqual(mock_stdout.getvalue(), "Alignment:\nACA\nACA\nAlignment:\nACA\nACA\n")
+        self.assertEqual(mock_stdout.getvalue(), "Alignment with score 9:\nACA\nACA\nAlignment with score 9:\nACA\nACA\n")
 
     @patch('sys.stdout', new_callable=io.StringIO)
     def test_traceback_smith_waterman_4(self, mock_stdout):
@@ -226,54 +275,88 @@ class PairwiseAlignments(unittest.TestCase):
         seq2 = "AACG"
         matrix, traceback = compute_smith_waterman(1, -1, -2, seq1, seq2, 0)
         traceback_smith_waterman(seq1, seq2, matrix, traceback, 0)
-        self.assertEqual(mock_stdout.getvalue(), "Alignment:\nAA\nAA\n")
+        self.assertEqual(mock_stdout.getvalue(), "Alignment with score 2:\nAA\nAA\n")
+
+    @patch('sys.stdout', new_callable=io.StringIO)
+    def test_traceback_smith_waterman_5(self, mock_stdout):
+        seq1 = "TGCT"
+        seq2 = "ATTCA"
+        matrix, traceback = compute_smith_waterman(3, -1, -3, seq1, seq2, 0)
+        traceback_smith_waterman(seq1, seq2, matrix, traceback, 1)
+        self.assertEqual(mock_stdout.getvalue(), "Alignment with score 5:\nTGC\nTTC\n")
+
+    @patch('sys.stdout', new_callable=io.StringIO)
+    def test_traceback_smith_waterman_6(self, mock_stdout):
+        seq1 = "TGCT"
+        seq2 = "ATTCA"
+        matrix, traceback = compute_smith_waterman(3, -1, -3, seq1, seq2, 1)
+        traceback_smith_waterman(seq1, seq2, matrix, traceback, 1)
+        self.assertEqual(mock_stdout.getvalue(), "Alignment with score 5:\nTGC\nTTC\n")
 
     @patch('sys.stdout', new_callable=io.StringIO)
     def test_traceback_needleman_wunsch_1(self, mock_stdout):
         seq1 = "AATCG"
         seq2 = "AACG"
         matrix, traceback = compute_needleman_wunsch(1, -1, -2, seq1, seq2, 1)
-        path(seq1, seq2, traceback, len(seq1), len(seq2))
-        self.assertEqual(mock_stdout.getvalue(), "Alignment:\nAATCG\nAA-CG\n")
+        path(seq1, seq2, traceback, len(seq1), len(seq2), matrix[len(seq1), len(seq2)])
+        self.assertEqual(mock_stdout.getvalue(), "Alignment with score 2:\nAATCG\nAA-CG\n")
 
     @patch('sys.stdout', new_callable=io.StringIO)
     def test_traceback_needleman_wunsch_2(self, mock_stdout):
         seq1 = "CIAO"
         seq2 = "CIAOCI"
         matrix, traceback = compute_needleman_wunsch(2, -1, -2, seq1, seq2, 1)
-        path(seq1, seq2, traceback, len(seq1), len(seq2))
-        self.assertEqual(mock_stdout.getvalue(), "Alignment:\nCIAO--\nCIAOCI\n")
+        path(seq1, seq2, traceback, len(seq1), len(seq2), matrix[len(seq1), len(seq2)])
+        self.assertEqual(mock_stdout.getvalue(), "Alignment with score 4:\nCIAO--\nCIAOCI\n")
 
     @patch('sys.stdout', new_callable=io.StringIO)
     def test_traceback_needleman_wunsch_3(self, mock_stdout):
         seq1 = "ACACACC"
         seq2 = "ACA"
         matrix, traceback = compute_needleman_wunsch(3, -1, -1, seq1, seq2, 1)
-        path(seq1, seq2, traceback, len(seq1), len(seq2))
+        path(seq1, seq2, traceback, len(seq1), len(seq2), matrix[len(seq1), len(seq2)])
         self.assertEqual(mock_stdout.getvalue(),
-                         "Alignment:\nACACACC\n--ACA--\n"
-                         "Alignment:\nACACACC\nACA----\n"
-                         "Alignment:\nACACACC\nAC--A--\n"
-                         "Alignment:\nACACACC\nA--CA--\n")
+                         "Alignment with score 5:\nACACACC\n--ACA--\n"
+                         "Alignment with score 5:\nACACACC\nACA----\n"
+                         "Alignment with score 5:\nACACACC\nAC--A--\n"
+                         "Alignment with score 5:\nACACACC\nA--CA--\n")
 
     @patch('sys.stdout', new_callable=io.StringIO)
     def test_traceback_needleman_wunsch_4(self, mock_stdout):
         seq1 = "ACACACC"
         seq2 = "ACA"
         matrix, traceback = compute_needleman_wunsch(3, -1, -1, seq1, seq2, 0)
-        path(seq1, seq2, traceback, len(seq1), len(seq2))
+        path(seq1, seq2, traceback, len(seq1), len(seq2), matrix[len(seq1), len(seq2)])
         self.assertEqual(mock_stdout.getvalue(),
-                         "Alignment:\nACACACC\n--ACA--\n")
+                         "Alignment with score 5:\nACACACC\n--ACA--\n")
 
     @patch('sys.stdout', new_callable=io.StringIO)
     def test_traceback_needleman_wunsch_5(self, mock_stdout):
         seq1 = "ATTAAAGGTTTATACCTTCCCAGGTAACAAACCAACCAACTTTCGATCTCTTGTAGATCTGTTCTCTAAACGAACTTTAAAATCTGTGTGGCTGTCACTCGGCTGCATGCTTAGTGCACTCACGCAGTATAATTAATAACTAATTACTGTCGTTGACAGGACACGAGTAACTCGTCTATCTTCTGCAGGCTGCTTACGGTTTCGTCCGTGTTGCAGCCGATCATCAGCACATCTAGGTTTCGTCCGGGTGTGACCGAAAGGTAAGATGGAGAGCCTTGTCCCTGGTTTCAACGAGAAAACACACGTCCAACTCAGTTTGCCTGTTTTACAGGTTCGCGACGTGCTCGTACGTGGCTTTGGAGACTCCGTGGAGGAGGTCTTATCAGAGGCACGTCAACATCTTAAAGATGGCACTTGTGGCTTAGTAGAAGTTGAAAAAGGCGTTTTGCCTCAACTTGAACAGCCCTATGTGTTCATCAAACGTTCGGATGCTCGAACTGCACCTCATGGTCATGT"
         seq2 = "TATGGTTGAGCTGGTAGCAGAACTCGAAGGCATTCAGTACGGTCGTAGTGGTGAGACACTTGGTGTCCTTGTCCCTCATGTGGGCGTAATACCAGTGGCTTACCGCAAGGTTCTTCTTCGTAAGAACGGTAATAAAGGAGCTGGTGGCCATAGTTACGGCGCCGATCTAAAGTCATTTGACTTAGGCGACGAGCTTGGCACTGATCCTTATGAAGATTTTCAAGAAAACTGGAACACTAAACATAGCAGTGGTGTTACCCGTGAACTCATGCGTGAGCTTAACGGAGGGGCATACACTCGCTATGTCGATAACAACTTCTGTGGCCCTGATGGCTACCCTCTTGAGTGCATTAAAGACCTTCTAGCACGTGCTGGTAAAGCTTCATGCACTTTGTCCGAACAACTGGACTTTATTGACACTAAGAGGGGTGTATACTGCTGCCGTGAACATGAGCATGAAATTG"
         matrix, traceback = compute_needleman_wunsch(3, -1, -1, seq1, seq2, 0)
-        path(seq1, seq2, traceback, len(seq1), len(seq2))
-        self.assertEqual(mock_stdout.getvalue(), "Alignment:\n"
+        path(seq1, seq2, traceback, len(seq1), len(seq2), matrix[len(seq1), len(seq2)])
+        self.assertEqual(mock_stdout.getvalue(), "Alignment with score 679:\n"
                                                  "ATTAAAGGTTTATACCTTCCCAGGTAACA-AAC-C-AA-CCAACTTTC-G-ATC--TCTTGTAGATCTGTTCTCTAAACGAACTTTAAAATCTGTGTGGC-TGTCACTCGGCTGCATGCTTAGTGC--ACTCACGCAGTATAATTAATAACTAA--TTACTGTCGTT-G-ACAGGACACGAGTAACTCGTCTATCTTCTGCAGGCTGCTTACGGTTTCGTCCGT-GTT---GCAGCCGATCATCAGCACA-TCTAGGTTTCGTCCGGGTGTGACCGAAAGGTAAGATGG-A--GAGCCTTGTCCCTG--G--TTTCAACGAGAAA----ACACACGTCCAAC-T--CAGTTTGCCTGTTTTACAGGTTCGCGACGTGC-TCGTACGTG-GCTTTGGAGACTCCGTGGAGGAGGTCTTATCAGAGGC-A---CG-T--CAACATCT-T---AAAGATGGC-A----CTTGTG-GC-TT--AG------TAG-AAGT--TGAAAAAGGCGTT-TTGC-C----T-C-AACTTGAAC-AG-CCCTATGTGTTCA-TCAA-ACGTTCGGATGCTCGA-ACTGC-ACC-T---CATG-GTCATG----T-\n"
                                                  "--T-ATGG-TT-GAGC-T----GGTAGCAGAACTCGAAGGC-A--TTCAGTA-CGGTC--GTAG---TG--GT-GAGAC--AC--T----T-GGTGT-CCTTGT--C-C--CT-CATG--T-GGGCGTAAT-AC-CAGT-GGCTT-ACCGC-AAGGTT-CT-TC-TTCGTA-A-GA-ACG-GTAA------TA-------AAGG-AGC-T--GG--T-GGCCATAGTTACGGC-GCCGATC-T-A--A-AGTC-A--TTT-GACTTAG-GCGA-CG--AGCT----TGGCACTGATCC-T-T--ATGAAGATTTTCAA-GA-AAACTGGA-ACAC-T-AAACATAGCAG--TG---GTGTTACCCG-T-G-AAC-T-CAT-G--CGTGAGC-TT--A-A---C--GGAGG-GG-CATA-CACTCGCTATGTCGATAACAACTTCTGTGGCCCTGATGGCTACCCTCTTGAGTGCATTAAAGACCTTCTAGCACGTGCTGGTAAA-GC-TTCATGCACTTTGTCCGAAC---AACTGGACTTTAT-TG-ACACT-AAGA-G---GGGTG-T--ATACTGCTGCCGTGAACATGAG-CATGAAATTG\n")
+
+    @patch('sys.stdout', new_callable=io.StringIO)
+    def test_traceback_needleman_wunsch_6(self, mock_stdout):
+        seq1 = "ATTCA"
+        seq2 = "TGCT"
+        matrix, traceback = compute_needleman_wunsch(3, -1, -3, seq1, seq2, 1)
+        path(seq1, seq2, traceback, len(seq1), len(seq2), matrix[len(seq1), len(seq2)])
+        self.assertEqual(mock_stdout.getvalue(),
+                         "Alignment with score 1:\nATTCA\n-TGCT\n")
+
+    @patch('sys.stdout', new_callable=io.StringIO)
+    def test_traceback_needleman_wunsch_7(self, mock_stdout):
+        seq1 = "ATTCA"
+        seq2 = "TGCT"
+        matrix, traceback = compute_needleman_wunsch(3, -1, -3, seq1, seq2, 0)
+        path(seq1, seq2, traceback, len(seq1), len(seq2), matrix[len(seq1), len(seq2)])
+        self.assertEqual(mock_stdout.getvalue(),
+                         "Alignment with score 1:\nATTCA\n-TGCT\n")
 
 
 if __name__ == '__main__':
